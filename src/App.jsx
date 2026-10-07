@@ -1,136 +1,96 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-
+import React from 'react';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import Login from './pages/Login';
-import ConvidadoDashboard from './pages/ConvidadoDashboard';
-import AdminDashboard from './pages/AdminDashboard';
-import PortariaDashboard from './pages/PortariaDashboard';
 
-// --- Autenticação mock ---
-// Guardado apenas em memória (Context). Ao recarregar a página o estado se
-// perde, pois ainda não há token/sessão persistida. Quando plugar o Spring
-// Boot, troque por um Context que valide um JWT vindo do backend.
-const AuthContext = createContext(null);
 
-export function useAuth() {
-  return useContext(AuthContext);
+/**
+ * Componente reutilizável para telas ainda não desenvolvidas.
+ * Mantém a identidade visual do MainPass (dark mode + índigo).
+ */
+function Placeholder({ title, subtitle, icon }) {
+  return (
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden p-8">
+      {/* Efeitos de luz no fundo (mesmo padrão do Login) */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-600/20 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+      <div className="relative z-10 text-center bg-brand-800/60 backdrop-blur-xl border border-white/10 rounded-3xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] px-10 py-12 max-w-md w-full">
+        <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-full mb-4 shadow-[0_8px_20px_rgba(99,102,241,0.35)]">
+          <i className={`fas ${icon} text-white text-2xl`}></i>
+        </div>
+
+        <h1 className="text-3xl font-extrabold text-white tracking-tight">{title}</h1>
+        <p className="text-slate-400 mt-2 text-sm">{subtitle}</p>
+
+        <Link
+          to="/"
+          className="inline-flex items-center mt-8 text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
+        >
+          <i className="fas fa-arrow-left mr-2"></i>
+          Voltar ao login
+        </Link>
+      </div>
+    </div>
+  );
 }
 
-function RotaProtegida({ perfilPermitido, children }) {
-  const { usuario } = useAuth();
-  if (!usuario || usuario.perfil !== perfilPermitido) {
-    return <Navigate to="/" replace />;
-  }
-  return children;
+/**
+ * Tela 404 para rotas inexistentes.
+ */
+function NotFound() {
+  return (
+    <Placeholder
+      title="Página não encontrada"
+      subtitle="O endereço que você tentou acessar não existe."
+      icon="fa-triangle-exclamation"
+    />
+  );
 }
-
-const theme = createTheme({
-  palette: {
-    mode: 'dark',
-    background: {
-      default: '#10131A',
-      paper: '#1A1F2B',
-    },
-    primary: {
-      main: '#2DD4E0',
-      contrastText: '#0A0E14',
-    },
-    secondary: {
-      main: '#8B93A7',
-    },
-    success: {
-      main: '#1B8F4C',
-    },
-    error: {
-      main: '#C62828',
-    },
-    warning: {
-      main: '#F5A623',
-    },
-    text: {
-      primary: '#E8EAF0',
-      secondary: '#8B93A7',
-    },
-    divider: 'rgba(255,255,255,0.08)',
-  },
-  typography: {
-    fontFamily: "'Inter', 'Roboto', sans-serif",
-    h1: { fontFamily: "'Space Grotesk', sans-serif" },
-    h2: { fontFamily: "'Space Grotesk', sans-serif" },
-    h3: { fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 },
-    h4: { fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 },
-    h5: { fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 },
-    h6: { fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 },
-    button: { textTransform: 'none', fontWeight: 600 },
-  },
-  shape: {
-    borderRadius: 12,
-  },
-  components: {
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          backgroundImage: 'none',
-        },
-      },
-    },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 10,
-        },
-      },
-    },
-  },
-});
 
 export default function App() {
-  const [usuario, setUsuario] = useState(null);
-
-  useEffect(() => {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href =
-      'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap';
-    document.head.appendChild(link);
-  }, []);
-
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <AuthContext.Provider value={{ usuario, setUsuario }}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route
-              path="/admin"
-              element={
-                <RotaProtegida perfilPermitido="morador">
-                  <AdminDashboard />
-                </RotaProtegida>
-              }
-            />
-            <Route
-              path="/portaria"
-              element={
-                <RotaProtegida perfilPermitido="portaria">
-                  <PortariaDashboard />
-                </RotaProtegida>
-              }
-            />
-            <Route
-              path="/convidado"
-              element={
-                <RotaProtegida perfilPermitido="convidado">
-                  <ConvidadoDashboard />
-                </RotaProtegida>
-              }
-            />
-          </Routes>
-        </BrowserRouter>
-      </AuthContext.Provider>
-    </ThemeProvider>
+    <BrowserRouter>
+      <div className="min-h-screen bg-brand-900 text-slate-300 font-sans antialiased">
+        <Routes>
+          <Route path="/" element={<Login />} />
+
+          <Route
+            path="/admin"
+            element={
+              <Placeholder
+                title="Painel do Morador / Admin"
+                subtitle="Em desenvolvimento"
+                icon="fa-user-shield"
+              />
+            }
+          />
+
+          <Route
+            path="/portaria"
+            element={
+              <Placeholder
+                title="Painel da Portaria"
+                subtitle="Em desenvolvimento"
+                icon="fa-door-open"
+              />
+            }
+          />
+
+          <Route
+            path="/convidado"
+            element={
+              <Placeholder
+                title="Painel do Convidado"
+                subtitle="Em desenvolvimento"
+                icon="fa-qrcode"
+              />
+            }
+          />
+
+          {/* Rota coringa: qualquer URL não mapeada */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
   );
 }

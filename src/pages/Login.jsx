@@ -1,235 +1,243 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Paper,
-  TextField,
-  Button,
-  Typography,
-  Stack,
-  Tabs,
-  Tab,
-  InputAdornment,
-  Link, // <-- Importamos o Link aqui
-} from '@mui/material';
-import MailOutlineIcon from '@mui/icons-material/MailOutlined';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
-import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
-import PersonOutlineIcon from '@mui/icons-material/PersonOutlined';
-import { useAuth } from '../App';
-
-const PERFIS = [
-  { valor: 'morador', label: 'Sou Morador', rota: '/admin', icone: <ApartmentOutlinedIcon fontSize="small" /> },
-  { valor: 'portaria', label: 'Sou Portaria', rota: '/portaria', icone: <SecurityOutlinedIcon fontSize="small" /> },
-  { valor: 'convidado', label: 'Sou Convidado', rota: '/convidado', icone: <PersonOutlineIcon fontSize="small" /> },
-];
+import mascote from '../assets/mascote.png';
 
 export default function Login() {
-  const navigate = useNavigate();
-  const { setUsuario } = useAuth();
+  const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
   const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [perfilIndex, setPerfilIndex] = useState(0);
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
+  
+  const [loading, setLoading] = useState(false);
 
-  const perfilAtual = PERFIS[perfilIndex];
+  const resetForm = () => {
+    setPassword('');
+    setConfirmPassword('');
+    setName('');
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+  };
+
+  const toggleMode = () => {
+    setIsLogin(!isLogin);
+    resetForm();
+  };
+
+  const validateEmail = (val) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+  };
+
+  const validatePassword = (val) => {
+    // Mínimo 8 caracteres, 1 maiúscula, 1 minúscula e 1 número.
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    return regex.test(val);
+  };
+
+  const validateConfirmPassword = () => {
+    return password === confirmPassword;
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    setUsuario({
-      nome: email.split('@')[0] || 'Usuário',
-      email,
-      perfil: perfilAtual.valor,
-    });
-
-    navigate(perfilAtual.rota);
+    setLoading(true);
+    
+    // Simulando chamada na API (Substituir pelo Axios/Fetch para o Spring Boot)
+    setTimeout(() => {
+      setLoading(false);
+      alert(isLogin ? 'Login efetuado com sucesso!' : 'Conta criada com sucesso!');
+    }, 1500);
   };
 
+  const isFormValid = isLogin
+    ? email && validateEmail(email) && password && validatePassword(password)
+    : name && email && validateEmail(email) && password && validatePassword(password) && confirmPassword && validateConfirmPassword();
+
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        px: 2,
-        backgroundColor: '#0B1121', 
-        backgroundImage: 'radial-gradient(circle at 50% 50%, #152340 0%, #0B1121 100%)',
-      }}
-    >
-      <Paper
-        elevation={0}
-        sx={{
-          width: '100%',
-          maxWidth: 420,
-          p: { xs: 4, md: 5 },
-          borderRadius: 4,
-          backgroundColor: 'rgba(255, 255, 255, 0.03)', 
-          backdropFilter: 'blur(24px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          boxShadow: '0 30px 60px rgba(0, 0, 0, 0.4)',
-        }}
-      >
-        <Stack spacing={0.5} alignItems="center" sx={{ mb: 4 }}>
-          <Typography variant="h5" sx={{ color: 'white', fontWeight: 700, letterSpacing: '-0.5px' }}>
-            Controle de Acesso
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-            Entre de acordo com o seu perfil
-          </Typography>
-        </Stack>
+    <div className="min-h-screen relative overflow-hidden flex bg-brand-900 text-slate-300 font-sans antialiased selection:bg-indigo-500 selection:text-white">
+      
+      {/* Efeitos de Luz no Fundo (Background Glow) */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-600/20 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-        <Tabs
-          value={perfilIndex}
-          onChange={(e, novoValor) => setPerfilIndex(novoValor)}
-          variant="fullWidth"
-          sx={{ 
-            mb: 3, 
-            minHeight: 40, 
-            '& .MuiTabs-indicator': { 
-              backgroundColor: '#818CF8' 
-            },
-            '& .MuiTab-root': { 
-              minHeight: 40, 
-              fontSize: '0.72rem', 
-              px: 1,
-              color: 'rgba(255, 255, 255, 0.5)',
-              '&.Mui-selected': { 
-                color: '#818CF8' 
-              }
-            } 
-          }}
-        >
-          {PERFIS.map((perfil) => (
-            <Tab key={perfil.valor} icon={perfil.icone} iconPosition="start" label={perfil.label} />
-          ))}
-        </Tabs>
-
-        <Box component="form" onSubmit={handleSubmit}>
-          <Stack spacing={2.5}>
-            <TextField
-              label="E-mail"
-              type="email"
-              fullWidth
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              InputLabelProps={{ style: { color: 'rgba(255, 255, 255, 0.6)' } }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  color: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  borderRadius: 2,
-                  transition: 'all 0.3s',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
-                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                  '&.Mui-focused': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                    '& fieldset': { borderColor: '#818CF8', borderWidth: '1px' },
-                  },
-                },
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <MailOutlineIcon fontSize="small" sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <TextField
-              label="Senha"
-              type="password"
-              fullWidth
-              required
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              InputLabelProps={{ style: { color: 'rgba(255, 255, 255, 0.6)' } }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  color: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  borderRadius: 2,
-                  transition: 'all 0.3s',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
-                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                  '&.Mui-focused': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                    '& fieldset': { borderColor: '#818CF8', borderWidth: '1px' },
-                  },
-                },
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <LockOutlinedIcon fontSize="small" sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
-                  </InputAdornment>
-                ),
-              }}
-            />
+      {/* Lado Esquerdo - Formulário */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 z-10">
+        <div className="w-full max-w-md">
+          
+          {/* Container Glassmorphism */}
+          <div className="bg-brand-800/60 backdrop-blur-xl border border-white/10 rounded-3xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] p-8">
             
-            <Button 
-              type="submit" 
-              variant="contained" 
-              size="large" 
-              fullWidth 
-              sx={{ 
-                mt: 1,
-                py: 1.5,
-                borderRadius: 3,
-                textTransform: 'none',
-                fontSize: '1rem',
-                fontWeight: 600,
-                background: 'linear-gradient(90deg, #6366F1 0%, #8B5CF6 100%)',
-                boxShadow: '0 4px 14px rgba(99, 102, 241, 0.4)',
-                '&:hover': {
-                  background: 'linear-gradient(90deg, #4F46E5 0%, #7C3AED 100%)',
-                  boxShadow: '0 6px 20px rgba(99, 102, 241, 0.6)',
-                },
-              }}
-            >
-              Entrar como {perfilAtual.label.replace('Sou ', '')}
-            </Button>
+            {/* Cabeçalho / Logo */}
+<div className="text-center mb-8">
+  <div className="inline-flex items-center justify-center w-28 h-28 bg-white rounded-3xl mb-4 overflow-hidden shadow-[0_8px_30px_rgba(99,102,241,0.35)] ring-4 ring-indigo-500/30">
+    <img
+  src={mascote}
+  alt="Mascote MainPass"
+  className="w-32 h-32 object-contain mx-auto mb-4 drop-shadow-[0_8px_20px_rgba(99,102,241,0.45)]"
+  draggable="false"
+/>
+  </div>
+  <h2 className="text-3xl font-extrabold text-white tracking-tight">
+    Main<span className="text-indigo-400">Pass</span>
+  </h2>
+  <p className="text-slate-400 mt-2 text-sm">
+    {isLogin ? 'Faça login para acessar o sistema' : 'Crie sua conta de acesso'}
+  </p>
+</div>
 
-            {/* NOVOS LINKS ADICIONADOS AQUI */}
-            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 2 }}>
-              <Link
-                component="button"
-                type="button"
-                onClick={() => navigate('/esqueci-senha')}
-                sx={{
-                  color: 'rgba(255, 255, 255, 0.6)',
-                  fontSize: '0.85rem',
-                  textDecoration: 'none',
-                  transition: 'color 0.2s',
-                  '&:hover': { color: '#818CF8', textDecoration: 'underline' },
-                }}
+            {/* Formulário */}
+            <form onSubmit={handleSubmit} noValidate>
+              
+              {/* Campo Nome (Apenas Registro) */}
+              {!isLogin && (
+                <div className="mb-5 transition-opacity duration-300">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Nome Completo</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      autoComplete="name"
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-white placeholder-slate-500 outline-none"
+                      placeholder="Seu nome"
+                    />
+                    <i className="fas fa-user absolute right-4 top-3.5 text-slate-500"></i>
+                  </div>
+                </div>
+              )}
+
+              {/* Campo E-mail */}
+              <div className="mb-5">
+                <label className="block text-sm font-medium text-slate-300 mb-2">E-mail</label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-white placeholder-slate-500 outline-none"
+                    placeholder="seu@email.com"
+                  />
+                  <i className="fas fa-envelope absolute right-4 top-3.5 text-slate-500"></i>
+                </div>
+                {email && !validateEmail(email) && (
+                  <p className="mt-1.5 text-xs text-red-400">Insira um e-mail válido.</p>
+                )}
+              </div>
+
+              {/* Campo Senha */}
+              <div className="mb-5">
+                <label className="block text-sm font-medium text-slate-300 mb-2">Senha</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete={isLogin ? 'current-password' : 'new-password'}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-white placeholder-slate-500 outline-none"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    tabIndex="-1"
+                    className="absolute right-3 top-3 text-slate-500 hover:text-white transition-colors p-1"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    <i className={showPassword ? 'fas fa-eye-slash w-5 h-5' : 'fas fa-eye w-5 h-5'}></i>
+                  </button>
+                </div>
+                {password && !validatePassword(password) && (
+                  <p className="mt-1.5 text-xs text-red-400">
+                    Mínimo 8 caracteres, incluindo maiúscula, minúscula e número.
+                  </p>
+                )}
+              </div>
+
+              {/* Campo Confirmar Senha (Apenas Registro) */}
+              {!isLogin && (
+                <div className="mb-6 transition-opacity duration-300">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Confirmar Senha</label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      autoComplete="new-password"
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-white placeholder-slate-500 outline-none"
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      tabIndex="-1"
+                      className="absolute right-3 top-3 text-slate-500 hover:text-white transition-colors p-1"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      <i className={showConfirmPassword ? 'fas fa-eye-slash w-5 h-5' : 'fas fa-eye w-5 h-5'}></i>
+                    </button>
+                  </div>
+                  {confirmPassword && !validateConfirmPassword() && (
+                    <p className="mt-1.5 text-xs text-red-400">As senhas não coincidem.</p>
+                  )}
+                </div>
+              )}
+
+              {/* Botão Submit */}
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 text-white py-3.5 rounded-xl font-semibold shadow-lg hover:from-indigo-400 hover:to-indigo-500 focus:ring-4 focus:ring-indigo-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-[0.98]"
+                disabled={loading || !isFormValid}
               >
-                Esqueceu a senha?
-              </Link>
+                {loading ? (
+                  <span className="inline-flex items-center">
+                    <i className="fas fa-circle-notch fa-spin -ml-1 mr-2"></i>
+                    Processando...
+                  </span>
+                ) : (
+                  <span>{isLogin ? 'Entrar no Sistema' : 'Criar Conta'}</span>
+                )}
+              </button>
 
-              <Link
-                component="button"
-                type="button"
-                onClick={() => navigate('/criar-conta')}
-                sx={{
-                  color: '#818CF8',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  transition: 'color 0.2s',
-                  '&:hover': { color: '#A5B4FC', textDecoration: 'underline' },
-                }}
-              >
-                Criar nova conta
-              </Link>
-            </Stack>
-            {/* FIM DOS LINKS */}
+              {/* Alternar Form */}
+              <p className="mt-6 text-center text-sm text-slate-400">
+                <span>{isLogin ? 'Não possui acesso?' : 'Já tem uma conta?'}</span>
+                <button
+                  type="button"
+                  className="ml-1 text-indigo-400 hover:text-indigo-300 font-semibold focus:outline-none transition-colors"
+                  onClick={toggleMode}
+                >
+                  <span>{isLogin ? 'Criar conta' : 'Fazer login'}</span>
+                </button>
+              </p>
+            </form>
+          </div>
 
-          </Stack>
-        </Box>
-      </Paper>
-    </Box>
+          {/* Rodapé */}
+          <p className="text-center text-xs text-slate-600 mt-6">
+            MainPass © {new Date().getFullYear()} — Controle de Acesso
+          </p>
+
+        </div>
+      </div>
+
+      {/* Lado Direito - Imagem de Fundo (Moderna/Tech) */}
+      <div className="hidden lg:block lg:w-1/2 relative">
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&q=80')" }}
+        ></div>
+        {/* Overlay Degradê */}
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-900/90 via-brand-900/60 to-indigo-900/80"></div>
+        
+        <div className="absolute inset-0 flex items-center justify-center p-12">
+          <div className="max-w-lg text-white border-l-4 border-indigo-500 pl-8">
+            <h2 className="text-4xl font-bold mb-4 leading-tight">Segurança e Agilidade em um só lugar.</h2>
+            <p className="text-lg text-slate-300">Gerencie a entrada de moradores, portarias e convidados através de um sistema unificado e tecnologia de aproximação.</p>
+          </div>
+        </div>
+      </div>
+      
+    </div>
   );
 }
